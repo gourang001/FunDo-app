@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import Joi from '@hapi/joi';
 import User from '../models/user.model';
 
@@ -17,7 +18,7 @@ export const newUserValidator = async (req, res, next) => {
         'string.email': 'Invalid email format.',
         'any.required': 'Email is required and must be a Gmail address.',
       }),
-    phone: Joi.number()
+    phoneNo: Joi.number()
       .integer()
       .min(6000000000)
       .max(9999999999)
@@ -34,7 +35,7 @@ export const newUserValidator = async (req, res, next) => {
         'string.pattern.base':
           'Password must be at least 6 characters long, include one uppercase, one lowercase, one number, and one special character.',
         'any.required': 'Password is required.',
-      })
+      }),
   });
 
   const { error, value } = schema.validate(req.body, { abortEarly: false });

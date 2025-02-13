@@ -1,53 +1,54 @@
+/* eslint-disable quotes */
 /* eslint-disable prettier/prettier */
 import User from '../models/user.model';
-const bcrypt = require('bcrypt');
-
-import jwt from 'jsonwebtoken';
+const bcrypt = require("bcrypt");
+const jwt = require('jsonwebtoken');
 import dotenv from 'dotenv';
-dotenv.config(); // Load environment variables
-const SECRET_KEY = process.env.SECRET_KEY;
-
 
 //create new user
 export const newUser = async (body) => {
-  const hassPassword = await bcrypt.hash(body.password, 10);
-  body.password = hassPassword;
+  const hashPassword = await bcrypt.hash(body.password,10);
+  body.password = hashPassword;
   const data = await User.create(body);
   return data;
 };
 
-
+// login
 export const loginUser = async (body) => {
   const { email, password } = body;
-
-  // Find the user by email
+  // Check if the user exists
   const user = await User.findOne({ email });
   if (!user) {
-    const error = new Error('Invalid email or password');
-    error.code = 400;
-    throw error;
+    const err = new Error('Invalid email');
+    err.code = 400;
+    throw err;
   }
-
-  // Compare the password
+  // Compare entered password with hashed password
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    const error = new Error('Invalid email or password');
-    error.code = 400;
-    throw error;
+    const err = new Error('Invalid password');
+    err.code = 400;
+    throw err;
   }
 
-  // Generate JWT Token
+  // jwt token gen
   const token = jwt.sign(
     { id: user._id, email: user.email }, // Payload
-    SECRET_KEY, // Secret key
-    { expiresIn: '24h' } // Token expiry time
+    process.env.SECRET_KEY, // Secret key
+    { expiresIn: '1h' } // Token expiry (adjust as needed)
   );
 
-  return {
-    id: user._id,
-    email: user.email,
-    name: user.name,
-    phone: user.phone,
-    token, // Return token to the user
-  };
+  const userWithoutPassword = user.toObject();
+  delete userWithoutPassword.password;
+  return { user: userWithoutPassword , token};
 };
+
+// get user
+// export const getUsers = async () => {
+//   try {
+//     const users = await User.find({}, { password: 0 }); // Excludes passwords
+//     return users;
+//   } catch (error) {
+//     throw new Error('Error fetching users');
+//   }
+// };

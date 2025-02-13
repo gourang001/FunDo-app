@@ -5,29 +5,24 @@ const userSchema = new Schema(
   {
     name: {
       type: String,
-      required: true,
-      minlength: [3, `Name must be at least 3 characters long`],
-      maxlength: [50, `Name must not exceed 50 characters`]
+      required: true
     },
     email: {
       type: String,
       required: true,
       unique: true,
-      lowercase: true
     },
-    phone: {
-      type: Number
+    phoneNo: {
+      type: Number,
     },
     password: {
       type: String,
       required: true,
-      minlength: [8, `Password must be at least 8 characters`]
-    }
+      // select : false
+    },
   },
-
   {
-    timestamps: true
+    timestamps: true,
   }
 );
-
-export default model('User', userSchema);
+export default model('User',userSchema);
