@@ -1,32 +1,24 @@
-/* eslint-disable prettier/prettier */
 import HttpStatus from 'http-status-codes';
-import * as UserService from '../services/user.service';
+import * as UserService from '../services/user.service.js';
 
 export const newUser = async (req, res, next) => {
-  try {
-    console.log("Inside Controller");
-    const data = await UserService.newUser(req.body);
-    res.status(HttpStatus.CREATED).json({
-      code: HttpStatus.CREATED,
-      data: data,
-      message: 'User created !!!!'
-    });
-  } catch (error) {
-    next(error);
-  }
+  const response = await UserService.newUser(req.body);
+  res.status(response.code).json(response);
 };
 
 export const loginUser = async (req, res, next) => {
-  try {
-    const data = await UserService.loginUser(req.body);
-    res.status(HttpStatus.OK).json({
-      code: HttpStatus.OK,
-      data: data,
-      message: 'Login successful',
-    });
-  } catch (error) {
-    next(error);
-  }
+  const response = await UserService.loginUser(req.body);
+  res.status(response.code).json(response);
+};
+
+export const forgotPassword = async (req, res, next) => {
+  const response = await UserService.forgotPassword(req.body.email);
+  res.status(response.code).json(response);
+};
+
+export const resetPassword = async (req, res, next) => {
+  const response = await UserService.resetPassword(req.body.email, req.body.otp, req.body.newPassword);
+  res.status(response.code).json(response);
 };
 
 // export const getUsers = async (req, res, next) => {
