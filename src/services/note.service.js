@@ -4,94 +4,85 @@ import Note from '../models/note.model';
 import User from '../models/user.model.js';
 import bcrypt from 'bcrypt';
 
-// create note
-export const createNote = async (body)=>{
-    const note = await Note.create(body);
-    return note;
+// Create a new note
+export const createNote = async (noteData) => {
+    try {
+        const note = await Note.create(noteData);
+        return { code: 201, message: 'Note created', data: note };
+    } catch (error) {
+        return { code: 500, message: 'Error creating note', error: error.message };
+    }
 };
 
-// get all notes
-export const getNotes = async (userId)=>{
-    const note = await Note.find({userId,trash: false});
-    return note;
+// Get all notes for a user
+export const getNotes = async (userId) => {
+    try {
+        const notes = await Note.find({ userId, trash: false });
+
+        if (!notes.length) {
+            return { code: 404, message: 'No notes found' };
+        }
+
+        return { code: 200, message: 'Notes fetched successfully', data: notes };
+    } catch (error) {
+        return { code: 500, message: 'Error fetching notes', error: error.message };
+    }
 };
 
+// Get a single note by ID
 export const getNoteById = async (noteId, userId) => {
-    return await Note.findOne({ _id: noteId, userId }); // Ensure user can only access their own notes
+    try {
+        const note = await Note.findOne({ _id: noteId, userId });
+
+        if (!note) {
+            return { code: 404, message: 'Note not found' };
+        }
+
+        return { code: 200, message: 'Note fetched successfully', data: note };
+    } catch (error) {
+        return { code: 500, message: 'Error fetching note', error: error.message };
+    }
 };
 
-// Update note by ID
+// Update a note by ID
 export const updateNoteById = async (noteId, userId, updateData) => {
-    return await Note.findOneAndUpdate(
-        { _id: noteId, userId }, // Ensure user can only update their own notes
-        updateData,
-        { new: true } // Return updated note
-    );
+    try {
+        const note = await Note.findOneAndUpdate(
+            { _id: noteId, userId }, // Ensure user can only update their own notes
+            updateData,
+            { new: true } // Return updated note
+        );
+
+        if (!note) {
+            return { code: 404, message: 'Note not found or unauthorized' };
+        }
+
+        return { code: 200, message: 'Note updated successfully', data: note };
+    } catch (error) {
+        return { code: 500, message: 'Error updating note', error: error.message };
+    }
 };
 
 // delete
-export const deleteNote = async (noteId) => {
-    const note = await Note.findById(noteId);
+// Soft delete (toggle trash) a note by ID
+export const deleteNote = async (noteId, userId) => {
+    try {
+        const note = await Note.findOne({ _id: noteId, userId });
 
-    if (!note) {
-        return null;
+        if (!note) {
+            return { code: 404, message: 'Note not found' };
+        }
+
+        // Toggle trash value instead of deleting
+        note.trash = !note.trash;
+        await note.save();
+
+        return {
+            code: 200,
+            message: note.trash ? 'Note moved to trash' : 'Note restored',
+            data: note
+        };
+    } catch (error) {
+        return { code: 500, message: 'Error deleting/restoring note', error: error.message };
     }
-
-    // Toggle trash value instead of deleting
-    note.trash = !note.trash;
-    await note.save();
-
-    return note;
-};
-
-
-let recentOtp;
-export const forgotPassword = async (email)=> {
-    // console.log("Searching email:", email);
-    if (!email){
-    	throw { code: 400, message: 'send email'}
-  	}
-    let user = await User.findOne({email});
-    console.log(user)
-
-
-    if (!user) {
-        throw { code: 400, message: 'User with this email does not exist' };
-    }
-
-    // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    recentOtp=otp;
-
-    
-    
-    // console.log("OTP generated:", otp);
-    return {otp};
-};
-
-
-// Reset Password Function
-export const resetPassword = async (email, otp, newPassword) => {
-    // console.log("Resetting password for:", email);
-
-    // Check if OTP is valid
-    if(recentOtp!==parseInt(otp)){
-        return 'OTP Does not Match';
-    }
-
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // Find user and update password
-    const user = await User.findOneAndUpdate(
-        { email },
-        { password: hashedPassword },
-        { new: true }
-    );
-
-    if (!user) {
-        throw { code: 400, message: 'User with this email does not exist' };
-    }
-
-    return { message: 'Password reset successful' };
 };
