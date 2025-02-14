@@ -4,6 +4,7 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+const swaggerUi = require('swagger-ui-express');
 
 import routes from './routes';
 import database from './config/database';
@@ -15,7 +16,7 @@ import {
 import logger, { logStream } from './config/logger';
 
 import morgan from 'morgan';
-
+const swaggerDocument = require('../src/swagger/swagger.json');
 const app = express();
 const host = process.env.APP_HOST;
 const port = process.env.APP_PORT;
@@ -28,6 +29,7 @@ app.use(express.json());
 app.use(morgan('combined', { stream: logStream }));
 
 database();
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(`/`, routes());
 app.use(appErrorHandler);

@@ -2,7 +2,7 @@
   "name": "express",
   "version": "0.0.1",
   "description": "",
-  "main": "build/index.js",
+  "main": "src/index.js",
   "scripts": {
     "dev": "nodemon --exec babel-node src/index.js",
     "build": "rimraf build && babel src --out-dir build",
@@ -28,6 +28,8 @@
     "mailgun-js": "^0.22.0",
     "mongoose": "^5.10.2",
     "morgan": "^1.10.0",
+    "swagger": "^0.7.5",
+    "swagger-ui-express": "^5.0.1",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0"
   },
